@@ -1,0 +1,154 @@
+name: Monthly Pipeline
+
+on:
+  # First day of every month at 02:00 UTC
+  schedule:
+    - cron: "0 2 1 * *"
+  # Manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    name: Bronze Ingestion
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      ATHENA_S3_OUTPUT: ${{ secrets.ATHENA_S3_OUTPUT }}
+      LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+      # Spotify vars kept to avoid config import errors (dead code)
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Last.fm ingestion
+        run: uv run python -m ingestion.lastfm.ingest --all
+
+      - name: MusicBrainz artist metadata
+        run: uv run python -m ingestion.musicbrainz.ingest --all
+
+      - name: MusicBrainz albums
+        run: uv run python -m ingestion.musicbrainz.ingest --albums
+
+  silver:
+    name: Silver Cleaning
+    runs-on: ubuntu-latest
+    needs: ingest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      ATHENA_S3_OUTPUT: ${{ secrets.ATHENA_S3_OUTPUT }}
+      LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Silver artists pipeline
+        run: uv run python -m silver.pipeline --all
+
+      - name: Silver albums pipeline
+        run: uv run python -m silver.pipeline --albums
+
+  gold:
+    name: Gold Layer (dbt)
+    runs-on: ubuntu-latest
+    needs: silver
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ATHENA_S3_OUTPUT: ${{ secrets.ATHENA_S3_OUTPUT }}
+      LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Refresh Athena external tables
+        run: uv run python -m scripts.setup_athena
+
+      - name: dbt run
+        working-directory: dbt/metal_intelligence
+        run: uv run dbt run --profiles-dir ..
+
+      - name: dbt test
+        working-directory: dbt/metal_intelligence
+        run: uv run dbt test --profiles-dir ..
+
+  ml:
+    name: ML Retrain
+    runs-on: ubuntu-latest
+    needs: gold
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ATHENA_S3_OUTPUT: ${{ secrets.ATHENA_S3_OUTPUT }}
+      LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+      SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Train model (local MLflow tracking)
+        # MLflow writes to ./mlruns/ - artifacts not persisted between runs
+        # In production this would point at a remote tracking server
+        env:
+          MLFLOW_TRACKING_URI: "file:./mlruns"
+        run: uv run python -m ml.train
+
+      - name: Generate predictions
+        env:
+          MLFLOW_TRACKING_URI: "file:./mlruns"
+        run: uv run python -m ml.predict
+
+      - name: Upload predictions as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: breakout-predictions-${{ github.run_id }}
+          path: breakout_predictions.csv
+          retention-days: 90
