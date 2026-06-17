@@ -1,5 +1,15 @@
 # Metal Music Intelligence Pipeline
 
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
+![AWS S3](https://img.shields.io/badge/AWS_S3-Storage-569A31?style=flat-square&logo=amazons3&logoColor=white)
+![AWS Athena](https://img.shields.io/badge/AWS_Athena-Query-232F3E?style=flat-square&logo=amazonaws&logoColor=white)
+![dbt](https://img.shields.io/badge/dbt-Transformation-FF694B?style=flat-square&logo=dbt&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-189AB4?style=flat-square)
+![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2?style=flat-square&logo=mlflow&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-Visualization-3F4F75?style=flat-square&logo=plotly&logoColor=white)
+![Last.fm](https://img.shields.io/badge/Last.fm-API-D51007?style=flat-square&logo=lastdotfm&logoColor=white)
+![MusicBrainz](https://img.shields.io/badge/MusicBrainz-API-BA478F?style=flat-square)
+
 A production-grade batch ELT pipeline and ML system that ingests data from Last.fm and MusicBrainz, transforms it through a medallion architecture on AWS, and predicts which underground metal bands are about to break out.
 
 **Three analytical pillars:**
