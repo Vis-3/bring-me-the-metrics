@@ -1,0 +1,35 @@
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# uv
+.uv/
+
+# MLflow local runs
+mlruns/
+
+# Airflow local state
+orchestration/logs/
+orchestration/airflow.db
+
+# dbt local artifacts
+dbt/target/
+dbt/logs/
+dbt/.user.yml
+
+# Great Expectations local state
+tests/*/uncommitted/
+
+# Generated outputs - reproducible from pipeline
+data/
+breakout_predictions.csv
+visualizations/output/
+shap_importance.csv
+
+# OS
+.DS_Store
+Thumbs.db

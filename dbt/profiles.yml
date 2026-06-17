@@ -1,0 +1,13 @@
+metal_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      region_name: "{{ env_var('AWS_REGION', 'us-east-2') }}"
+      s3_staging_dir: "{{ env_var('ATHENA_S3_OUTPUT') }}"
+      s3_data_dir: "s3://metal-intelligence-pipeline/gold/"
+      database: AwsDataCatalog    # Athena's default data catalog — not the Glue database name
+      schema: metal_intelligence  # this becomes the Glue database name
+      aws_access_key_id: "{{ env_var('AWS_ACCESS_KEY_ID') }}"
+      aws_secret_access_key: "{{ env_var('AWS_SECRET_ACCESS_KEY') }}"
+      threads: 4

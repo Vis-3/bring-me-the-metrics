@@ -1,0 +1,61 @@
+version: 2
+
+sources:
+  - name: silver
+    description: "Cleaned and unified Silver layer — Parquet files on S3 read via Athena external tables"
+    database: AwsDataCatalog
+    schema: metal_intelligence
+
+    tables:
+      - name: artists
+        description: "Unified artist records — Last.fm listener data merged with MusicBrainz metadata"
+        external:
+          location: "s3://metal-intelligence-pipeline/silver/table=artists/"
+          file_format: parquet
+          partitions:
+            - name: subgenre
+              data_type: string
+            - name: date
+              data_type: string
+        freshness:
+          warn_after: {count: 8, period: day}
+          error_after: {count: 15, period: day}
+        loaded_at_field: date
+        columns:
+          - name: lastfm_name
+            description: "Primary artist identifier from Last.fm"
+            tests:
+              - not_null
+          - name: listeners
+            tests:
+              - not_null
+          - name: subgenre_tags
+            description: "Array of structs with tag, valid_from, valid_to — SCD Type 2"
+          - name: country
+            description: "Country of origin from MusicBrainz — null if resolution rejected"
+          - name: formed_year
+            description: "Year band formed from MusicBrainz structured data"
+          - name: mb_resolution_score
+            description: "Fuzzy match score 0-100 — null if no MusicBrainz match attempted"
+
+      - name: albums
+        description: "Album release dates for Betrayal Tracker bands from MusicBrainz"
+        external:
+          location: "s3://metal-intelligence-pipeline/silver/table=albums/"
+          file_format: parquet
+          partitions:
+            - name: subgenre
+              data_type: string
+            - name: date
+              data_type: string
+        columns:
+          - name: artist_name
+            tests:
+              - not_null
+          - name: title
+            tests:
+              - not_null
+          - name: first_release_date
+            description: "ISO date of first release — used to anchor listener trajectory"
+          - name: release_year
+            description: "Extracted year for easier filtering in dbt models"

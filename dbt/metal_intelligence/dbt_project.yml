@@ -1,0 +1,26 @@
+name: 'metal_intelligence'
+version: '1.0.0'
+config-version: 2
+
+profile: 'metal_intelligence'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  metal_intelligence:
+    staging:
+      +materialized: view        # views — no storage cost, always fresh
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+    marts:
+      +materialized: table       # pre-computed tables for fast analytical queries
+      +schema: marts

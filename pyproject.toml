@@ -1,0 +1,48 @@
+[project]
+name = "metal-intelligence"
+version = "0.1.0"
+description = "Metal music analytics pipeline — Spotify + Last.fm → S3 → dbt → XGBoost"
+requires-python = ">=3.12"
+
+dependencies = [
+    # API clients
+    "requests>=2.32",
+    "spotipy>=2.24",          # Spotify API wrapper — handles OAuth token refresh
+    # AWS
+    "boto3>=1.34",            # S3 reads/writes
+    # Data
+    "pandas>=2.2",
+    "pyarrow>=16.0",          # Parquet read/write engine
+    # Entity resolution
+    "rapidfuzz>=3.9",         # Fuzzy string matching for Spotify ↔ Last.fm artist names
+    # Data quality
+    "great-expectations>=0.18",
+    # ML
+    "xgboost>=2.0",
+    "scikit-learn>=1.5",
+    "optuna>=3.6",            # Hyperparameter tuning
+    "shap>=0.45",             # Feature importance explanations
+    "mlflow>=2.14",           # Experiment tracking
+    # Config
+    "python-dotenv>=1.0",     # Loads .env into os.environ
+    "dbt-athena-community>=1.10.1",
+    "plotly>=6.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.4",              # Linter + formatter
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Project root IS the package — tell hatchling to ship these top-level folders
+packages = ["ingestion", "silver", "ml", "orchestration"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
