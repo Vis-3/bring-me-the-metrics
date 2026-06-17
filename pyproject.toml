@@ -46,3 +46,8 @@ packages = ["ingestion", "silver", "ml", "orchestration"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.17",
+]
