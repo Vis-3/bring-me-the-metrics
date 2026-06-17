@@ -13,7 +13,6 @@ Feature engineering decisions:
 """
 import boto3
 import pandas as pd
-import numpy as np
 import time
 from sklearn.preprocessing import LabelEncoder
 from config import AWS_REGION, ATHENA_S3_OUTPUT

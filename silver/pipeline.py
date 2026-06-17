@@ -146,7 +146,7 @@ def run_weekly_charts(subgenre: str, run_date: date) -> None:
                 continue
 
     if not rows:
-        print(f"  ✗ no artist-week rows extracted — check Bronze chart format")
+        print("  ✗ no artist-week rows extracted — check Bronze chart format")
         return
 
     print(f"  Extracted {len(rows)} artist-week rows")
@@ -164,7 +164,7 @@ def run_weekly_charts(subgenre: str, run_date: date) -> None:
 
 def run_albums(run_date: date) -> None:
     """Write Silver album table from MusicBrainz Bronze — feeds Betrayal Tracker."""
-    print(f"\n── Silver pipeline: albums (betrayal tracker) ──")
+    print("\n── Silver pipeline: albums (betrayal tracker) ──")
 
     albums = read_musicbrainz_albums(run_date)
     if not albums:

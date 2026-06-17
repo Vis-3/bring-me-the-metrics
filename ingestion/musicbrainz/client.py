@@ -128,7 +128,7 @@ class MusicBrainzClient:
 
         while True:
             data = self._get(
-                f"release-group",
+                "release-group",
                 params={
                     "artist": mbid,
                     "type": "album|ep|single",

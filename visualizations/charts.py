@@ -154,9 +154,12 @@ def chart_engagement_vs_scale(features: pd.DataFrame) -> None:
     def quadrant(row):
         hi_eng = row["plays_per_listener"] >= med_engagement
         hi_lis = row["current_listeners"]  >= med_listeners
-        if hi_eng and hi_lis:     return "Giants"
-        if hi_eng and not hi_lis: return "Cult Heroes"
-        if not hi_eng and hi_lis: return "Mainstream"
+        if hi_eng and hi_lis:
+            return "Giants"
+        if hi_eng and not hi_lis:
+            return "Cult Heroes"
+        if not hi_eng and hi_lis:
+            return "Mainstream"
         return "Struggling"
 
     df["quadrant"] = df.apply(quadrant, axis=1)

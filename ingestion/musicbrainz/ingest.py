@@ -102,7 +102,7 @@ def ingest_albums(client: MusicBrainzClient, run_date: date) -> None:
         "Parkway Drive",
     ]
 
-    print(f"\n── MusicBrainz album ingestion: betrayal tracker ──")
+    print("\n── MusicBrainz album ingestion: betrayal tracker ──")
     all_albums = []
 
     for name in betrayal_artists:

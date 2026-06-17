@@ -4,7 +4,6 @@ Steps in order: parse → filter → deduplicate → type cast.
 Entity resolution happens after this, in entity_resolution/resolver.py.
 """
 from datetime import date
-from config import UNDERGROUND_LISTENER_CEILING
 
 
 def parse_listeners(value) -> int | None:

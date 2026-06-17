@@ -83,7 +83,7 @@ def predict() -> pd.DataFrame:
     )
     underground.index += 1  # 1-based ranking
 
-    print(f"\nTop 20 underground bands most likely to break out:\n")
+    print("\nTop 20 underground bands most likely to break out:\n")
     display_cols = [
         "artist_name", "subgenre", "current_listeners",
         "breakout_probability", "top_breakout_factor"
@@ -92,7 +92,7 @@ def predict() -> pd.DataFrame:
 
     # Save full predictions
     results.to_csv("breakout_predictions.csv", index=False)
-    print(f"\n✓ Full predictions saved to breakout_predictions.csv")
+    print("\n✓ Full predictions saved to breakout_predictions.csv")
 
     return underground
 

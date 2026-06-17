@@ -1,5 +1,7 @@
 """Inspect a single Spotify Bronze record to debug popularity field."""
-import gzip, json, boto3
+import gzip
+import json
+import boto3
 from config import S3_BUCKET_NAME, AWS_REGION
 
 s3 = boto3.client("s3", region_name=AWS_REGION)

@@ -57,7 +57,7 @@ def backfill_subgenre(client: SpotifyClient, subgenre: str, run_date: date) -> N
         ContentEncoding="gzip",
         ContentType="application/json",
     )
-    print(f"  ✓ Bronze overwritten with enriched data")
+    print("  ✓ Bronze overwritten with enriched data")
 
 
 def main():
